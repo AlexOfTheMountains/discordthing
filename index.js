@@ -1,5 +1,7 @@
 const Discord = require('discord.js');
 const token = require('./token.json');
+const fs = require('fs');
+const path = require('path');
 
 const client = new Discord.Client();
 
@@ -9,6 +11,7 @@ commands = {};
 
 function addCmds(path)
 {
+  console.log("Adding commands :" + path);
   cmds = require(path).commands;
 
   for (cmd in cmds)
@@ -17,7 +20,16 @@ function addCmds(path)
   }
 }
 
-addCmds('./commands/nice.js');
+function addAllCmds(dir)
+{
+  fs.readdirSync(dir).forEach( f => {
+    let dirPath = path.join(dir, f);
+    let isDirectory = fs.statSync(dirPath).isDirectory();
+    isDirectory ?
+      walkDir(dirPath) : addCmds("./" + path.join(dir, f));
+    });
+}
+addAllCmds('./commands');
 
 client.on('ready', () => {
   console.log(`Logged in as ${client.user.tag}`);
