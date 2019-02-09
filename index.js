@@ -49,6 +49,7 @@ client.on('message', msg => {
   else
     return
 
+  cmd = cmd.toLowerCase();
   if (commands[cmd])
   {
     commands[cmd](msg, args);
