@@ -47,7 +47,7 @@ module.exports = {
     });
   },
   listPlayers : function(callback) {
-    db.all('SELECT name as name, discordid as discordid from CurrentPlayerNames', (err, rows) => {
+    db.all('SELECT rowid as rowid, name as name, discordid as discordid from CurrentPlayerNames', (err, rows) => {
       if (!err)
       {
         callback(rows);
@@ -94,11 +94,46 @@ module.exports = {
   retractPlayerRole : function(roleName, discordUserID) {
 
   },
-  createTier : function(tierName, maxPlayers, preferredPlayers, discordRoleID) {
-
+  addTier : function(tierName, maxPlayers, preferredPlayers, discordRoleID, callback) {
+    db.serialize( () => {
+      console.log(`${tierName} ${maxPlayers} ${preferredPlayers} ${discordRoleID}`);
+      db.run('INSERT INTO tiers (Name, MaxSize, PreferredSize, DiscordRoleID) VALUES(?, ?, ?, ?)',
+        tierName, maxPlayers, preferredPlayers, discordRoleID,
+      function (err) {
+        if (!err) {
+          callback(true);
+          console.log(`Added tier ${tierName} with MaxPlayers ${maxPlayers}`);
+        } else {
+          console.error(err.message);
+        }
+      });
+    });
   },
-  updateTier : function(tierName, maxPlayers, preferredPlayers, discordRoleID) {
-
+  updateTier : function(tierName, maxPlayers, preferredPlayers, discordRoleID, callback) {
+    db.serialize( () => {
+      db.get('SELECT rowid FROM tiers WHERE Name LIKE (?)', tierName, (err, row) => {
+        if(!err && row)
+        {
+          key = row.rowid;
+          console.log(`RowID: ${row.rowid}`);
+          db.run("UPDATE tiers SET MaxSize = (?), PreferredSize = (?), DiscordRoleID = (?) WHERE rowid = (?)",
+            maxPlayers, preferredPlayers, discordRoleID, key, function(err) {
+              if (!err) {
+                console.log(`Updated tier, changed ${this.changes} rows`);
+                callback(true);
+              } else {
+                console.error(err.message);
+                callback(false);
+              }
+            });
+        } else if (!err) {
+          callback(false);
+        } else {
+          callback(false);
+          console.error(err.message);
+        }
+      });
+    });
   },
   assignTier : function(discordUserID, playerName, tierName) {
 

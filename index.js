@@ -52,7 +52,12 @@ client.on('message', msg => {
   cmd = cmd.toLowerCase();
   if (commands[cmd])
   {
-    commands[cmd](msg, args);
+    try {
+      commands[cmd](msg, args);
+    } catch (e) {
+      console.error(e);
+      msg.channel.send("Something has gone horribly wrong, but at least I'm not dead!");
+    }
   }
 });
 

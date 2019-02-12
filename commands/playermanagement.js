@@ -4,14 +4,23 @@ model.openDB('db/test.db');
 
 function getFirstUserMention(msg)
 {
-  //if (msg.mentions.users.length() >= 1)
-  {
-    mentioned = msg.mentions.users.array();
-    for (user in mentioned) {
-      user = mentioned[user];
-      if (user != null)
-        return user;
-    }
+  mentioned = msg.mentions.users.array();
+  for (user in mentioned) {
+    user = mentioned[user];
+    if (user != null)
+      return user;
+  }
+  return null;
+}
+
+function getFirstRoleMention(msg)
+{
+  mentioned = msg.mentions.roles.array();
+  console.log(msg.mentions);
+  for (role in mentioned) {
+    role = mentioned[role];
+    if (role != null)
+      return role;
   }
   return null;
 }
@@ -38,7 +47,6 @@ module.exports = {
         for (row in rows)
         {
           row = rows[row];
-          console.log(row); //do we still need this log?
           discord = row.discordid ? `: <@${row.discordid}>` : ""
           string += `Player: ${row.name} ${discord}\n`;
         }
@@ -61,7 +69,6 @@ module.exports = {
           model.updatePower(args[0], args[1], discordUserID, (value) => {
           if (value) {
             name = value.name;
-            //need to get the following message to output username insteaed of discord id or playername
             msg.reply(`Successfully updated power to ${args[0]} and level to ${args[1]} for ${name}`);
           } else {
             msg.reply(`Did not successfully update.`)
@@ -69,5 +76,31 @@ module.exports = {
         });
       }
     },
+    addtier : (msg, args) => {
+      // !addtier Name MaxPlayers PrefPlayers @DiscordRole
+      role = getFirstRoleMention(msg);
+      if (!role)
+        msg.reply("Must specify a discord role for the tier");
+      model.addTier(args[0], args[1], args[2], role.id, (success) => {
+        if (success) {
+          msg.reply(`Successfully added tier ${args[0]}`);
+        } else {
+          msg.reply(`Failed to add tier`);
+        }
+      });
+    },
+    updatetier : (msg, args) => {
+      // !addtier Name MaxPlayers PrefPlayers @DiscordRole
+      role = getFirstRoleMention(msg);
+      if (!role)
+        msg.reply("Must specify a discord role for the tier");
+      model.updateTier(args[0], args[1], args[2], role.id, (success) => {
+        if (success) {
+          msg.reply(`Successfully updated tier ${args[0]}`);
+        } else {
+          msg.reply(`Failed to add tier`);
+        }
+      });
+    }
   }
 };
