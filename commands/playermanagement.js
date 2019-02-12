@@ -58,14 +58,15 @@ module.exports = {
         //not currently checking to ensure an integer, number.isinteger wasn't working
         msg.reply(`Invalid value entered for level. Please enter an integer between 1 and 50.`);
       } else {
-          model.updatePower(args[0], args[1], discordUserID, (success) => {
-            if (success) {
-              //need to get the following message to output username insteaed of discord id or playername
-              msg.reply(`Successfully updated power to ${args[0]} and level to ${args[1]} for ${discordUserID}`);
-            } else {
-              msg.reply(`Did not successfully update.`)
-            }
-          });
+          model.updatePower(args[0], args[1], discordUserID, (value) => {
+          if (value) {
+            name = value.name;
+            //need to get the following message to output username insteaed of discord id or playername
+            msg.reply(`Successfully updated power to ${args[0]} and level to ${args[1]} for ${name}`);
+          } else {
+            msg.reply(`Did not successfully update.`)
+          }
+        });
       }
     },
   }

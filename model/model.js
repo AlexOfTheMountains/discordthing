@@ -61,9 +61,10 @@ module.exports = {
     db.serialize( () => { //first get playerkey from discordid
       key = null;
       //currentid = discordUserID
-      db.get('SELECT rowid as rowid from players WHERE DiscordID=? AND Inactive = 0', [discordUserID], (err, rows) => {
+      db.get('SELECT rowid as rowid, name as name from CurrentPlayerNames WHERE DiscordID=?', discordUserID, (err, row) => {
         if (!err) {
-          key = rows.rowid;
+          key = row.rowid;
+          name = row.name;
           db.run('INSERT INTO player_powerscore(PlayerKey, date, power, level) VALUES((?),(?),(?),(?))',
             key, currentDate(), score, level, (err) => {
             if (err)  {
@@ -71,7 +72,7 @@ module.exports = {
               callback(false);
             } else {
               console.log(`Added new power score for player with discordID ${discordUserID?discordUserID: 'NULL'}`);
-              callback(true);
+              callback({name: name});
             }
           });
         } else {
