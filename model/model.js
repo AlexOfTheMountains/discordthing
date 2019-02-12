@@ -56,10 +56,32 @@ module.exports = {
       }
     });
   },
-  updateScore : function(discordUserID, score, level) {
-
+  updatePower : function(score, level, discordUserID, callback) {
+    success=false;
+    db.serialize( () => { //first get playerkey from discordid
+      key = null;
+      //currentid = discordUserID
+      db.get('SELECT rowid as rowid from players WHERE DiscordID=? AND Inactive = 0', [discordUserID], (err, rows) => {
+        if (!err) {
+          key = rows.rowid;
+          db.run('INSERT INTO player_powerscore(PlayerKey, date, power, level) VALUES((?),(?),(?),(?))',
+            key, currentDate(), score, level, (err) => {
+            if (err)  {
+              console.error(err.message);
+              callback(false);
+            } else {
+              console.log(`Added new power score for player with discordID ${discordUserID?discordUserID: 'NULL'}`);
+              callback(true);
+            }
+          });
+        } else {
+          console.error(err.message);
+          callback(false);
+        }
+      });
+    });
   },
-  updatePlayerName : function(discordUserID, oldName, newName) {
+  updateName : function(discordUserID, oldName, newName) {
 
   },
   addRole : function(roleName, discordRoleID) {
@@ -79,5 +101,8 @@ module.exports = {
   },
   assignTier : function(discordUserID, playerName, tierName) {
 
-  }
+  },
+  linkPlayer : function(discordUserID, playerName){
+
+  },
 };
