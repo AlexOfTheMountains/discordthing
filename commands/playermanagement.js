@@ -37,6 +37,8 @@ module.exports = {
       model.addPlayer(args[0], discordUserID, (success) => {
         if (success) {
           msg.reply(`Successfully added ${args[0]}`);
+        } else {
+          msg.reply(`Did not successfully add player.`)
         }
       });
     },
@@ -57,16 +59,17 @@ module.exports = {
       // !updatepower power level(1-50) discordMention(optional)
       mentioned = getFirstUserMention(msg);
       discordUserID = null;
+      level = args[1];
       if (mentioned) {
         discordUserID = mentioned.id;
       } else {
         discordUserID = msg.author.id;
       }
-      if (args[1] < 1 || args[1] > 50) {
+      if (level < 1 || level > 50) {
         //not currently checking to ensure an integer, number.isinteger wasn't working
         msg.reply(`Invalid value entered for level. Please enter an integer between 1 and 50.`);
       } else {
-          model.updatePower(args[0], args[1], discordUserID, (value) => {
+          model.updatePower(args[0], level, discordUserID, (value) => {
           if (value) {
             name = value.name;
             msg.reply(`Successfully updated power to ${args[0]} and level to ${args[1]} for ${name}`);
