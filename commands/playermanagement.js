@@ -101,6 +101,29 @@ module.exports = {
           msg.reply(`Failed to add tier`);
         }
       });
+    },
+    assignplayer : (msg, args) => {
+      // !assignplayer PlayerName or DiscordMention TierName
+      player = getFirstUserMention(msg);
+      discordUserID = 0;
+      playerName = "";
+      if (player) {
+        discordUserID = player.id;
+      }
+      else
+        playerName = args[0];
+
+      tier = args[1];
+      model.assignTier(discordUserID, playerName, tier, (success, reason) => {
+        if (success) {
+          if (discordUserID)
+            msg.reply(`Successfully assigned <@${discordUserID}> to ${tier}`);
+          else if (playerName)
+            msg.reply(`Successfully assigned ${playerName} to ${tier}`);
+        } else {
+          msg.reply(`Failed to assign player: ${reason}`);
+        }
+      });
     }
   }
 };

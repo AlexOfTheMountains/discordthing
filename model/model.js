@@ -135,8 +135,32 @@ module.exports = {
       });
     });
   },
-  assignTier : function(discordUserID, playerName, tierName) {
-
+  assignTier : function(discordUserID, playerName, tierName, callback) {
+    db.serialize( () => {
+      db.get("SELECT rowid as rowid FROM CurrentPlayerNames WHERE DiscordID = ? or Name LIKE ?",
+      discordUserID, playerName, (err, row) => {
+        if (!err && row) {
+          playerKey = row.rowid;
+          db.get('SELECT rowid as rowid FROM tiers WHERE name LIKE ?', tierName, (err, row) => {
+            if (!err && row) {
+              tierKey = row.rowid;
+              db.run('INSERT INTO player_tier(PlayerKey, TierKey, Date) VALUES (?, ?, ?)',
+              playerKey, tierKey, currentDate(), function(err) {
+                callback(true, null);
+              });
+            } else {
+              if (err)
+                console.error("tier " + err.message);
+              callback(false, "Unknown tier");
+            }
+          });
+        } else {
+          if (err)
+            console.error("player " + err.message);
+          callback(false, "Unknown player");
+        }
+      });
+    });
   },
   linkPlayer : function(discordUserID, playerName){
 
