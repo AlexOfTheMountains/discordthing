@@ -82,8 +82,28 @@ module.exports = {
       });
     });
   },
-  updateName : function(discordUserID, oldName, newName) {
-
+  updatePlayerName : function(discordUserID, oldName, newName, callback) {
+    db.serialize( () => {
+      db.get('SELECT rowid FROM CurrentPlayerNames WHERE DiscordID = ? or Name LIKE ?',
+        discordUserID, oldName, (err, row) => {
+          if (!err && row) {
+            key = row.rowid;
+            db.run('INSERT INTO player_name(PlayerKey, date, name) VALUES((?),(?),(?))',
+              key, currentDate(), newName, (err) => {
+                if(err) {
+                  console.error(err.message);
+                  callback(false, "Write Error");
+                } else {
+                  console.log(`Updated name for player to ${newName}`);
+                  callback(true, null);
+                }
+              });
+          } else {
+            console.error(err.message);
+            callback(false, "Unknown Player");
+          }
+      });
+    });
   },
   addRole : function(roleName, discordRoleID) {
 

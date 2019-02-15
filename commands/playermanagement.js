@@ -127,6 +127,29 @@ module.exports = {
           msg.reply(`Failed to assign player: ${reason}`);
         }
       });
-    }
+    },
+    updatename : (msg, args) => {
+      // !updatename newname oldname or DiscordMention
+      mentioned = getFirstUserMention(msg);
+      discordUserID = null;
+      oldName = "";
+      if (mentioned){
+        discordUserID = mentioned.id;
+      } else {
+        oldName = args[1];
+      }
+      newName = args[0];
+      model.updatePlayerName(discordUserID, oldName, newName, (success, reason) => {
+        if  (success) {
+          if (discordUserID) {
+            msg.reply(`Successfully renamed <@${discordUserID}> to ${newName}`);
+          } else if (oldName) {
+            msg.reply(`Successfully renamed ${oldName} to ${newName}`);
+          }
+        } else {
+          msg.reply(`Failed to rename player: ${reason}`);
+        }
+      });
+    },
   }
 };
