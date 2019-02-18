@@ -220,7 +220,16 @@ module.exports = {
       });
     });
   },
-  linkPlayer : function(discordUserID, playerName){
+  linkPlayer : function(discordUserID, playerName, callback) {
+
+  },
+  viewPlayer : function(playerName, discordUserID, callback) {
+
+  },
+  viewTier : function(tierName, discordRoleID, callback) {
+
+  },
+  overrideTier : function(discordUserID, playerName, discordRoleID, tierName, callback) {
 
   },
 };
