@@ -93,7 +93,7 @@ module.exports = {
       });
     },
     updatetier : (msg, args) => {
-      // !addtier Name MaxPlayers PrefPlayers @DiscordRole
+      // !updatetier Name MaxPlayers PrefPlayers @DiscordRole
       role = getFirstRoleMention(msg);
       if (!role)
         msg.reply("Must specify a discord role for the tier");
@@ -101,7 +101,7 @@ module.exports = {
         if (success) {
           msg.reply(`Successfully updated tier ${args[0]}`);
         } else {
-          msg.reply(`Failed to add tier`);
+          msg.reply(`Failed to update tier`);
         }
       });
     },
@@ -148,6 +148,43 @@ module.exports = {
           }
         } else {
           msg.reply(`Failed to rename player: ${reason}`);
+        }
+      });
+    },
+    addrole : (msg, args) => {
+      // !addrole rolename @DiscordRole (optional)
+      role = getFirstRoleMention(msg);
+      if (!role) {
+        roleid = null;
+      } else {
+        roleid = role.id;
+      }
+      model.addRole(args[0], roleid, (success) => {
+        if (success) {
+          msg.reply(`Successfully added role ${args[0]}`);
+        } else {
+          msg.reply(`Failed to add role`);
+        }
+      });
+    },
+    updaterole : (msg, args) => {
+      // !updaterole oldname newname @newDiscordRole (optional)
+      role = getFirstRoleMention(msg);
+      if (!role)  {
+        roleid = null;
+      } else {
+        roleid = role.id;
+      }
+      if (!args[1]) {
+        newname = args[0];
+      } else {
+        newname = args[1];
+      }
+      model.updateRole(args[0], newname, roleid, (success) => {
+        if (success) {
+          msg.reply(`Successfully updated role ${args[0]}`);
+        } else {
+          msg.reply(`Failed to update role`);
         }
       });
     },

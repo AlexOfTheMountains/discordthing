@@ -105,8 +105,46 @@ module.exports = {
       });
     });
   },
-  addRole : function(roleName, discordRoleID) {
-
+  addRole : function(roleName, discordRoleID, callback) {
+    db.serialize( () => {
+      console.log(`${roleName} ${discordRoleID}`);
+      db.run('INSERT INTO role (Name, DiscordRoleID) VALUES(?, ?)',
+        roleName, discordRoleID,
+      function (err) {
+        if (!err) {
+          callback(true);
+          console.log(`Added role ${roleName} with discordRoleID ${discordRoleID}`);
+        } else {
+          console.error(err.message);
+        }
+      });
+    });
+  },
+  updateRole : function(oldRoleName, newRoleName, newDiscordRole, callback) {
+    db.serialize( () => {
+      db.get('SELECT rowid FROM role WHERE Name LIKE (?)', oldRoleName, (err, row) => {
+        if(!err && row)
+        {
+          key = row.rowid;
+          console.log(`RowID: ${row.rowid}`);
+          db.run("UPDATE role SET Name = (?), DiscordRoleID = (?) WHERE rowid = (?)",
+            newRoleName, newDiscordRole, key, function(err) {
+              if (!err) {
+                console.log(`Updated role, changed ${this.changes} rows`);
+                callback(true);
+              } else {
+                console.error(err.message);
+                callback(false);
+              }
+            });
+        } else if (!err) {
+          callback(false);
+        } else {
+          callback(false);
+          console.error(err.message);
+        }
+      });
+    });
   },
   assignPlayerRole : function(roleName, discordUserID) {
 
