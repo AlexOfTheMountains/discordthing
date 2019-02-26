@@ -1,4 +1,5 @@
 node_modules
 db/test.db
+db/chinook.db
+token.json
 
-chinook.db
