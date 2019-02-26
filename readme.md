@@ -2,11 +2,15 @@
 ## Setup
 * Checkout the repository
   
-	`git clone https://github.com/AlexOfTheMountains/discordthing.git`
+```sh
+git clone https://github.com/AlexOfTheMountains/discordthing.git
+```
 
 **or**, if you've set up an SSH key with github:
 
-	`git clone git@github.com:AlexOfTheMountains/discordthing.git`
+```sh
+git clone git@github.com:AlexOfTheMountains/discordthing.git
+```
 
 * Set up the node stuff
   
@@ -25,6 +29,8 @@
 ## Running it
 At the command line:
 
-`node index.js`
+```sh
+node index.js
+```
 
 It should start and connect to the discord instance.  It's probably best to have your own test server.  Contact Doralina to be added to the discord developer team.  This will allow you to create an instance of the bot to add to your server.
