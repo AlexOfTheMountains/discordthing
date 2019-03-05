@@ -113,9 +113,9 @@ module.exports = {
       if (player) {
         discordUserID = player.id;
       }
-      else
+      else {
         playerName = args[0];
-
+      }
       tier = args[1];
       model.assignTier(discordUserID, playerName, tier, (success, reason) => {
         if (success) {
@@ -167,6 +167,22 @@ module.exports = {
         }
       });
     },
+    deleterole : (msg, args) => {
+      // !deleterole rolename @DiscordRole (optional)
+      role = getFirstRoleMention(msg);
+      if (!role) {
+        roleid = null;
+      } else {
+        roleid = role.id;
+      }
+      model.deleteRole(args[0], roleid, (success, reason) => {
+        if (success) {
+          msg.reply(`Successfully deleted role ${args[0]}`);
+        } else {
+          msg.reply(`Failed to add role: ${reason}`);
+        }
+      });
+    },
     updaterole : (msg, args) => {
       // !updaterole oldname newname @newDiscordRole (optional)
       role = getFirstRoleMention(msg);
@@ -185,6 +201,58 @@ module.exports = {
           msg.reply(`Successfully updated role ${args[0]}`);
         } else {
           msg.reply(`Failed to update role`);
+        }
+      });
+    },
+    assignrole : (msg, args) => {
+      // !assignrole rolename playername (optional) @DiscordMention (optional) @roleMention (optional)
+      // note must have either playername or @DiscordMention, and rolename or @roleMention
+      player = getFirstUserMention(msg);
+      discordUserID = 0;
+      playerName = "";
+      if (player) {
+        discordUserID = player.id;
+      }
+      else {
+        playerName = args[1];
+      }
+      role = getFirstRoleMention(msg);
+      if (!role)  {
+        roleName = args[0];
+      } else {
+        roleName = role.name;
+      }
+      model.assignPlayerRole(roleName, playerName, discordUserID, (success, reason) => {
+        if (success) {
+          msg.reply(`Successfully assigned role ${roleName} to ${reason}.`);
+        } else {
+          msg.reply(`Failed to assign role: ${reason}`);
+        }
+      });
+    },
+    removerole : (msg, args) => {
+      // !removerole rolename playername (optional) @DiscordMention (optional) @roleMention (optional)
+      // note must have either playername or @DiscordMention, and rolename or @roleMention
+      player = getFirstUserMention(msg);
+      discordUserID = 0;
+      playerName = "";
+      if (player) {
+        discordUserID = player.id;
+      }
+      else {
+        playerName = args[1];
+      }
+      role = getFirstRoleMention(msg);
+      if (!role)  {
+        roleName = args[0];
+      } else {
+        roleName = role.name;
+      }
+      model.retractPlayerRole(roleName, playerName, discordUserID, (success, reason) => {
+        if (success) {
+          msg.reply(`Successfully removed role ${roleName} from ${reason}.`);
+        } else {
+          msg.reply(`Failed to remove role: ${reason}`);
         }
       });
     },

@@ -120,11 +120,36 @@ module.exports = {
       });
     });
   },
+  deleteRole : function(roleName, discordRoleID, callback) {
+    db.serialize( () => {
+      console.log(`${roleName} ${discordRoleID}`);
+      db.get('SELECT rowid FROM role WHERE Name LIKE ?', roleName, (err, row) => {
+        rolekey = row.rowid;
+        db.run('DELETE FROM player_role WHERE RoleKey = ?',
+          rolekey, function (err) {
+          if (!err) {
+            console.log(`Removed role ${roleName} from ${this.changes} players.`);
+            db.run('DELETE FROM role WHERE rowid = ?', rolekey, function (err){
+              if (!err) {
+                console.log(`Removed role ${roleName} from database.`);
+                callback(true, null);
+              } else {
+                console.error(err.message);
+                callback(false, "Failed to delete role from database.");
+              }
+            });
+          } else {
+            console.error(err.message);
+            callback(false, "Failed to remove role from players.");
+          }
+        });
+      });
+    });
+  },
   updateRole : function(oldRoleName, newRoleName, newDiscordRole, callback) {
     db.serialize( () => {
       db.get('SELECT rowid FROM role WHERE Name LIKE (?)', oldRoleName, (err, row) => {
-        if(!err && row)
-        {
+        if(!err && row) {
           key = row.rowid;
           console.log(`RowID: ${row.rowid}`);
           db.run("UPDATE role SET Name = (?), DiscordRoleID = (?) WHERE rowid = (?)",
@@ -146,11 +171,79 @@ module.exports = {
       });
     });
   },
-  assignPlayerRole : function(roleName, discordUserID) {
-
+  assignPlayerRole : function(roleName, playerName, discordUserID, callback) {
+    db.serialize( () => {
+      db.get('SELECT rowid, Name FROM CurrentPlayerNames WHERE DiscordID = ? or Name LIKE ?',
+        discordUserID, playerName, (err, row) => {
+        if (!err && row) {
+          playername = row.Name;
+          playerkey = row.rowid;
+          console.log(`PlayerRowID: ${row.rowid}`);
+          db.get('SELECT rowid FROM role WHERE Name LIKE ?', roleName, (err, row) => {
+            if (!err && row) {
+              rolekey = row.rowid;
+              console.log(`RoleRowID: ${row.rowid}`);
+              db.run('INSERT INTO player_role (RoleKey, PlayerKey) VALUES(?, ?)',
+                rolekey, playerkey, function(err) {
+                  if (!err) {
+                    callback(true, playername);
+                  } else {
+                    console.error(err.message);
+                    callback(false, "Assignment failed, player may already have role.");
+                  }
+                });
+            } else if (!err) {
+              callback(false, "Role does not exist.")
+            } else {
+              console.error(err.message);
+              callback(false, "Assignment failed.");
+            }
+          });
+        } else if (!err) {
+          callback(false, "Player could not be found or does not exist.");
+        } else {
+          callback(false, "Assignment failed.");
+          console.error(err.message);
+        }
+      });
+    });
   },
-  retractPlayerRole : function(roleName, discordUserID) {
-
+  retractPlayerRole : function(roleName, playerName, discordUserID, callback) {
+    db.serialize( () => {
+      db.get('SELECT rowid, Name FROM CurrentPlayerNames WHERE DiscordID = ? or Name LIKE ?',
+        discordUserID, playerName, (err, row) => {
+        if (!err && row) {
+          playerkey = row.rowid;
+          playername = row.Name;
+          console.log(`PlayerRowID: ${row.rowid}`);
+          db.get('SELECT rowid FROM role WHERE Name LIKE ?', roleName, (err, row) => {
+            if (!err && row) {
+              rolekey = row.rowid;
+              console.log(`RoleRowID: ${row.rowid}`);
+              db.run('DELETE FROM player_role WHERE RoleKey = ? and PlayerKey = ?',
+                rolekey, playerkey, function(err) {
+                  if (!err) {
+                    callback(true, playername);
+                  } else {
+                    console.error(err.message);
+                    callback(false, "Removal failed, player may already be lacking the role.");
+                  }
+                });
+            } else if (!err) {
+              callback(false, "Role does not exist.")
+            } else {
+              console.error(err.message);
+              callback(false, "Removal failed.");
+            }
+          });
+        } else if (!err) {
+          callback(false, "Player could not be found or does not exist.");
+        } else {
+          callback(false, "Removal failed.");
+          console.error(err.message);
+        }
+      });
+    });
   },
   addTier : function(tierName, maxPlayers, preferredPlayers, discordRoleID, callback) {
     db.serialize( () => {
@@ -230,6 +323,12 @@ module.exports = {
 
   },
   overrideTier : function(discordUserID, playerName, discordRoleID, tierName, callback) {
+
+  },
+  inactivatePlayer : function(playerName, discordUserID, callback) {
+
+  },
+  activatePlayer : function(playerName, discordUserID, callback) {
 
   },
 };
